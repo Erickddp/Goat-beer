@@ -14,10 +14,11 @@ import type { SequenceLayerHandle } from "./types";
  * servido agrega un leve giro que "vende" la inclinación de la botella.
  */
 const TRANSITIONS = [
-  // [inicio, duración, desenfoque máx, escala de salida, escala de entrada, giro]
-  { at: beats.pop - 0.03, d: 0.06, blur: 8, out: 1.1, in: 1.08, rot: 0 },
-  { at: beats.pour - 0.045, d: 0.09, blur: 14, out: 1.14, in: 1.12, rot: 4 },
-  { at: beats.overflow - 0.035, d: 0.07, blur: 10, out: 1.08, in: 1.06, rot: 0 },
+  // El pop: misma composición → crossfade limpio, sin desenfoque (se ve saltar la corcholata)
+  { at: beats.pop - 0.02, d: 0.04, blur: 0, out: 1, in: 1, rot: 0 },
+  // El servido: la botella cambia de pose → cruce largo, desenfoque suave y leve giro
+  { at: beats.pour - 0.06, d: 0.12, blur: 6, out: 1.05, in: 1.04, rot: 3 },
+  { at: beats.overflow - 0.04, d: 0.08, blur: 4, out: 1.03, in: 1.02, rot: 0 },
 ];
 
 const KeyframeLayer = forwardRef<SequenceLayerHandle, { source: KeyframesSource }>(function KeyframeLayer(
@@ -40,7 +41,7 @@ const KeyframeLayer = forwardRef<SequenceLayerHandle, { source: KeyframesSource 
       layers.forEach((layer, i) => {
         const start = holds[i];
         const end = i < TRANSITIONS.length ? TRANSITIONS[i].at : 1;
-        tl.fromTo(layer, { scale: 1 }, { scale: 1.05, duration: Math.max(0.01, end - start) }, start);
+        tl.fromTo(layer, { scale: 1 }, { scale: 1.03, duration: Math.max(0.01, end - start) }, start);
       });
 
       TRANSITIONS.forEach((t, i) => {
@@ -74,20 +75,29 @@ const KeyframeLayer = forwardRef<SequenceLayerHandle, { source: KeyframesSource 
               i === 0 ? "opacity-100 motion-reduce:opacity-0" : last ? "opacity-0 motion-reduce:opacity-100" : "opacity-0"
             }`}
           >
-            {(i === 0 || rest) && (
-            <Image
-              src={kf.src}
-              alt={kf.alt}
-              fill
-              // En vertical la foto 16:9 se escala ~3.5× para cubrir: pedir más resolución en móvil
-              sizes="(max-width: 767px) 700px, 100vw"
-              quality={80}
-              loading="eager"
-              fetchPriority={i === 0 ? "high" : "low"}
-              className="object-cover object-[var(--focus)] md:object-center"
-              style={{ "--focus": kf.mobileFocus } as React.CSSProperties}
-            />
-            )}
+            {/* Móvil: caja 16:9 centrada con la foto completa. Desktop: cubre toda la sección. */}
+            <div
+              className="absolute aspect-video max-md:top-[42%] max-md:-translate-y-1/2 max-md:[left:var(--left)] max-md:[width:var(--w)] max-md:[mask-image:radial-gradient(ellipse_72%_75%_at_50%_50%,#000_55%,transparent_100%)] md:inset-0 md:aspect-auto"
+              style={
+                {
+                  "--w": `${kf.mobile.w}vw`,
+                  "--left": `calc(50% - ${(kf.mobile.cx * kf.mobile.w).toFixed(2)}vw)`,
+                } as React.CSSProperties
+              }
+            >
+              {(i === 0 || rest) && (
+                <Image
+                  src={kf.src}
+                  alt={kf.alt}
+                  fill
+                  sizes="(max-width: 767px) 190vw, 100vw"
+                  quality={80}
+                  loading="eager"
+                  fetchPriority={i === 0 ? "high" : "low"}
+                  className="object-cover"
+                />
+              )}
+            </div>
           </div>
         );
       })}

@@ -12,8 +12,8 @@ import FrameCanvas from "./FrameCanvas";
 import type { SequenceLayerHandle } from "./types";
 import t from "@/content/i18n/es";
 
-/** Recorrido pinned extra: 300% + el propio viewport = ~4 alturas de pantalla. */
-const PIN_LENGTH = "+=300%";
+/** Recorrido pinned extra: 500% + el propio viewport = ~6 alturas de pantalla (más lento = se aprecia el destape). */
+const PIN_LENGTH = "+=500%";
 
 /**
  * 02 · Hero "destape y servido".
@@ -92,7 +92,7 @@ export default function PourSequence() {
         start: "top top",
         end: PIN_LENGTH,
         pin: true,
-        scrub: 0.6,
+        scrub: 1,
         animation: tl,
         onUpdate: (self) => {
           const p = self.progress;

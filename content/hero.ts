@@ -11,11 +11,13 @@ export interface HeroKeyframe {
   src: string;
   alt: string;
   /**
-   * object-position en móvil (la foto 16:9 se recorta mucho en vertical).
-   * Ojo: alinea proporcionalmente, no centra. Para centrar el punto c (0–1) en 375×812:
-   * p ≈ (c·1455 − 187) / 1080.
+   * Encuadre en móvil: la foto es 16:9 y el celular es vertical, así que en vez de
+   * recortarla con "cover" se muestra completa en una caja centrada.
+   * w = ancho de la caja en vw (>100 recorta el negro sobrante de los lados);
+   * cx = punto horizontal (0–1) de la foto que queda en el centro de la pantalla
+   * (donde está el centro de lo que se ve: botella + copa).
    */
-  mobileFocus: string;
+  mobile: { w: number; cx: number };
 }
 
 export interface KeyframesSource {
@@ -44,21 +46,21 @@ export type HeroSource = KeyframesSource | FramesSource;
  */
 export const beats = {
   /** "Destápala." visible desde el inicio, sale aquí */
-  destapaOut: 0.12,
+  destapaOut: 0.14,
   /** cruce kf-01 → kf-02 (y el "pop") */
   pop: 0.22,
-  /** cruce kf-02 → kf-03 */
-  pour: 0.4,
+  /** cruce kf-02 → kf-03 (la botella se inclina) */
+  pour: 0.42,
   /** "Mezquite Stout" */
-  mezquiteIn: 0.46,
-  mezquiteOut: 0.6,
+  mezquiteIn: 0.5,
+  mezquiteOut: 0.63,
   /** cruce kf-03 → kf-04 */
-  overflow: 0.64,
+  overflow: 0.7,
   /** "Hecha en la frontera." */
-  fronteraIn: 0.68,
-  fronteraOut: 0.8,
+  fronteraIn: 0.74,
+  fronteraOut: 0.86,
   /** la espuma sube y cubre la pantalla */
-  foamStart: 0.82,
+  foamStart: 0.88,
 } as const;
 
 export const keyframesSource: KeyframesSource = {
@@ -69,22 +71,22 @@ export const keyframesSource: KeyframesSource = {
     {
       src: "/media/kf-01-closed.jpg",
       alt: "Botella cerrada de Mezquite Stout junto a una copa vacía con el logo de la cabra",
-      mobileFocus: "32% 50%",
+      mobile: { w: 190, cx: 0.54 },
     },
     {
       src: "/media/kf-02-pop.jpg",
       alt: "La corcholata salta de la botella de Mezquite Stout",
-      mobileFocus: "32% 50%",
+      mobile: { w: 190, cx: 0.54 },
     },
     {
       src: "/media/kf-03-pour.jpg",
       alt: "La botella se inclina y sirve la stout en la copa",
-      mobileFocus: "92% 50%",
+      mobile: { w: 125, cx: 0.465 },
     },
     {
       src: "/media/kf-04-overflow.jpg",
       alt: "La copa llena de Mezquite Stout con la espuma desbordándose",
-      mobileFocus: "66% 50%",
+      mobile: { w: 190, cx: 0.54 },
     },
   ],
 };
