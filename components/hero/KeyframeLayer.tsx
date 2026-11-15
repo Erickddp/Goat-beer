@@ -91,7 +91,7 @@ const KeyframeLayer = forwardRef<SequenceLayerHandle, { source: KeyframesSource 
                   alt={kf.alt}
                   fill
                   sizes="(max-width: 767px) 190vw, 100vw"
-                  quality={80}
+                  quality={92}
                   loading="eager"
                   fetchPriority={i === 0 ? "high" : "low"}
                   className="object-cover"
