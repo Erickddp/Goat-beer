@@ -194,6 +194,32 @@ html:has(dialog[open]) .custom-cursor {
   display: none;
 }
 
+/* Hero: póster (primer frame) con el mismo encuadre inicial que la cámara del canvas */
+.hero-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 767px) {
+  .hero-poster {
+    inset: auto;
+    top: 42%;
+    left: calc(50% - 0.465 * 190vw);
+    width: 190vw;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    transform: translateY(-50%);
+  }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .hero-poster {
+    left: calc(50% - 0.58 * 220vw);
+    width: 220vw;
+  }
+}
+
 /* Hero: borde ondulado de la espuma (máscara) e indicador de scroll */
 .hero-foam {
   -webkit-mask-image:

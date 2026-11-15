@@ -1,11 +1,13 @@
 /**
  * Configuración del hero "destape y servido" (<PourSequence/>).
  *
- * Para pasar a la secuencia de frames de pour.mp4:
- *   1. bash scripts/extract-frames.sh   (genera public/frames/pour/{desktop,mobile}/0001.webp… y public/sfx/*.mp3)
- *   2. Cambia `source` abajo a `framesSource` y ajusta frameCount / beats.
- * No hay que tocar componentes: textos, espuma, sonido y pin leen los mismos `beats`.
+ * Fuente activa: secuencia de frames de pour.mp4 + overflow.mp4 en <canvas>.
+ * Para regenerar los frames y el audio: bash scripts/extract-frames.sh
+ * (si cambias la cantidad de frames, ajusta frameCount abajo).
+ * Fallback sin video: `source = keyframesSource` (4 fotos con crossfade).
  */
+
+/* ------------------------------------------------------------------ tipos */
 
 export interface HeroKeyframe {
   src: string;
@@ -14,8 +16,7 @@ export interface HeroKeyframe {
    * Encuadre en móvil: la foto es 16:9 y el celular es vertical, así que en vez de
    * recortarla con "cover" se muestra completa en una caja centrada.
    * w = ancho de la caja en vw (>100 recorta el negro sobrante de los lados);
-   * cx = punto horizontal (0–1) de la foto que queda en el centro de la pantalla
-   * (donde está el centro de lo que se ve: botella + copa).
+   * cx = punto horizontal (0–1) de la foto que queda en el centro de la pantalla.
    */
   mobile: { w: number; cx: number };
 }
@@ -27,8 +28,21 @@ export interface KeyframesSource {
   keyframes: HeroKeyframe[];
 }
 
-export interface FramesSource {
-  kind: "frames";
+/**
+ * Cámara virtual sobre el video: en cada punto `p` (progreso 0–1 del recorrido
+ * pinned) la imagen se escala `z` veces y el punto (cx, cy) del cuadro (0–1)
+ * queda en el ancla de la pantalla. Entre puntos se interpola con suavizado.
+ * Escritorio parte de "cover"; móvil parte de "ancho completo" (se ve el cuadro
+ * entero y z > 1 recorta el negro de los lados).
+ */
+export interface CameraKey {
+  p: number;
+  z: number;
+  cx: number;
+  cy: number;
+}
+
+export interface FrameSequence {
   frameCount: number;
   /** Ruta del frame i (1-based) para cada variante. */
   desktop: (i: number) => string;
@@ -36,33 +50,115 @@ export interface FramesSource {
   width: number;
   height: number;
   alt: string;
+  /** Tramo del recorrido (0–1) en el que corre la secuencia. */
+  range: [number, number];
+  /** "camera": encuadre animado (abajo). "cover": llena la pantalla. */
+  fit: "camera" | "cover";
+  camera?: { desktop: CameraKey[]; mobile: CameraKey[]; mobileAnchorY: number };
+  /** Mezcla con lo de abajo (la espuma usa "screen": su negro se vuelve transparente). */
+  blend?: "screen";
+}
+
+export interface FramesSource {
+  kind: "frames";
+  main: FrameSequence;
+  /** Segunda secuencia encima (la espuma que cubre la pantalla). */
+  overlay?: FrameSequence;
+  /** Imagen fija para prefers-reduced-motion (la copa servida). */
+  reducedPoster: { desktop: string; mobile: string };
 }
 
 export type HeroSource = KeyframesSource | FramesSource;
 
+/* ---------------------------------------------------------------- tiempos */
+
+/** El video del chorro ocupa este tramo del recorrido; el resto es la espuma. */
+const POUR_END = 0.78;
+/** Segundo del video → progreso del recorrido. */
+const at = (seconds: number) => +((seconds / 10) * POUR_END).toFixed(3);
+
 /**
- * Momentos clave como fracción (0–1) del recorrido pinned.
- * Texto, sonido y espuma se sincronizan con estos valores sin importar la fuente.
+ * Momentos clave (progreso 0–1). Textos, sonido, cámara y capítulos leen de aquí.
+ * Tiempos medidos en pour.mp4: corcholata 1.1 s, se inclina 2.0 s, chorro 3.0 s,
+ * la botella sale 6.5 s, desborde 7.5 s.
  */
 export const beats = {
-  /** "Destápala." visible desde el inicio, sale aquí */
-  destapaOut: 0.14,
-  /** cruce kf-01 → kf-02 (y el "pop") */
-  pop: 0.22,
-  /** cruce kf-02 → kf-03 (la botella se inclina) */
-  pour: 0.42,
-  /** "Mezquite Stout" */
-  mezquiteIn: 0.5,
-  mezquiteOut: 0.63,
-  /** cruce kf-03 → kf-04 */
-  overflow: 0.7,
-  /** "Hecha en la frontera." */
-  fronteraIn: 0.74,
-  fronteraOut: 0.86,
-  /** la espuma sube y cubre la pantalla */
-  foamStart: 0.88,
+  /** "Destápala." visible desde el inicio; explota justo antes del pop */
+  destapaOut: at(0.9),
+  pop: at(1.1),
+  /** el chorro empieza (sonido) */
+  pour: at(3.0),
+  mezquiteIn: at(3.3),
+  mezquiteOut: at(6.2),
+  overflow: at(7.5),
+  fronteraIn: at(7.6),
+  fronteraOut: 0.84,
+  /** la espuma empieza a bajar */
+  foamStart: 0.7,
 } as const;
 
+/** Capítulos del indicador lateral. */
+export const chapters = [
+  { label: "Destápala", from: 0 },
+  { label: "Sírvela", from: at(2.0) },
+  { label: "Disfrútala", from: at(7.5) },
+] as const;
+
+/* ---------------------------------------------------------------- fuentes */
+
+const pad = (i: number) => String(i).padStart(4, "0");
+
+export const framesSource: FramesSource = {
+  kind: "frames",
+  main: {
+    frameCount: 159,
+    desktop: (i) => `/frames/pour/desktop/${pad(i)}.webp`,
+    mobile: (i) => `/frames/pour/mobile/${pad(i)}.webp`,
+    width: 1280,
+    height: 720,
+    alt: "Se destapa una botella de Mezquite Stout y se sirve en copa hasta que la espuma se desborda",
+    range: [0, POUR_END],
+    fit: "camera",
+    camera: {
+      desktop: [
+        { p: 0, z: 1, cx: 0.5, cy: 0.5 },
+        { p: at(0.9), z: 1.16, cx: 0.33, cy: 0.36 }, // acercamiento al cuello antes del pop
+        { p: at(1.8), z: 1.12, cx: 0.34, cy: 0.38 }, // humo
+        { p: at(3.2), z: 1, cx: 0.5, cy: 0.5 }, // se abre para el chorro
+        { p: at(6.0), z: 1.06, cx: 0.56, cy: 0.56 },
+        { p: at(7.6), z: 1.18, cx: 0.6, cy: 0.56 }, // la copa desbordándose
+        { p: POUR_END, z: 1.24, cx: 0.6, cy: 0.55 },
+      ],
+      mobile: [
+        { p: 0, z: 1.9, cx: 0.465, cy: 0.5 },
+        { p: at(0.9), z: 2.5, cx: 0.33, cy: 0.42 },
+        { p: at(1.8), z: 2.3, cx: 0.34, cy: 0.45 },
+        { p: at(3.2), z: 1.3, cx: 0.45, cy: 0.5 }, // botella horizontal: se ve el cuadro casi completo
+        { p: at(6.0), z: 1.5, cx: 0.52, cy: 0.55 },
+        { p: at(7.6), z: 2.2, cx: 0.58, cy: 0.56 },
+        { p: POUR_END, z: 2.4, cx: 0.58, cy: 0.55 },
+      ],
+      mobileAnchorY: 0.42,
+    },
+  },
+  overlay: {
+    frameCount: 64,
+    desktop: (i) => `/frames/overflow/desktop/${pad(i)}.webp`,
+    mobile: (i) => `/frames/overflow/mobile/${pad(i)}.webp`,
+    width: 1280,
+    height: 720,
+    alt: "",
+    range: [beats.foamStart, 1],
+    fit: "cover",
+    blend: "screen",
+  },
+  reducedPoster: {
+    desktop: "/frames/pour/desktop/0140.webp",
+    mobile: "/frames/pour/mobile/0140.webp",
+  },
+};
+
+/** Fallback con 4 fotos (sin video). */
 export const keyframesSource: KeyframesSource = {
   kind: "keyframes",
   width: 2752,
@@ -91,21 +187,11 @@ export const keyframesSource: KeyframesSource = {
   ],
 };
 
-/** Listo para cuando exista pour.mp4 (ver scripts/extract-frames.sh). */
-export const framesSource: FramesSource = {
-  kind: "frames",
-  frameCount: 120,
-  desktop: (i) => `/frames/pour/desktop/${String(i).padStart(4, "0")}.webp`,
-  mobile: (i) => `/frames/pour/mobile/${String(i).padStart(4, "0")}.webp`,
-  width: 1600,
-  height: 900,
-  alt: "Se destapa y se sirve una Mezquite Stout",
-};
-
 /** Fuente activa. */
-export const source: HeroSource = keyframesSource;
+export const source: HeroSource = framesSource;
 
-/** Efectos de sonido. Si el archivo no existe se usa un "pop" sintetizado. */
+/** Efectos de sonido (extraídos de pour.mp4). Si falta un archivo, el pop se sintetiza. */
 export const sfx = {
   pop: "/sfx/pop.mp3",
+  pour: "/sfx/pour.mp3",
 } as const;

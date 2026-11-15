@@ -2,6 +2,16 @@
 
 Última revisión: 2026-11-15. Los originales de Gemini están en `src/*.jfif`; se convirtieron a PNG con los nombres de CLAUDE.md.
 
+## Video del hero (2026-11-15)
+
+| Archivo | Origen | Uso |
+|---|---|---|
+| `pour.mp4` | `src/pour.mp4` (1280×720, 10 s, con audio) | 159 frames en `public/frames/pour/` + `public/sfx/pop.mp3` y `pour.mp3` |
+| `overflow.mp4` | `src/overflow - Trim.mp4` (1280×720, 9.7 s) | 64 frames en `public/frames/overflow/` (espuma que cubre la pantalla) |
+
+Regenerar: `bash scripts/extract-frames.sh` (sin ffmpeg en el PATH: `FFMPEG=… FFPROBE=… bash scripts/extract-frames.sh`).
+Los `.mp4` no se despliegan (`.vercelignore`); solo los frames y el audio.
+
 ## Ya están (origen → destino)
 
 | Archivo | Origen | Notas |
@@ -30,8 +40,6 @@ Alternativas guardadas en `public/media/_alternativas/` (no se usan): copa desbo
 
 | Archivo | Para qué | Mientras tanto |
 |---|---|---|
-| `pour.mp4` | **Hero (prioridad 1).** Destape + servido, de él salen los frames y el audio | Crossfade de los keyframes `kf-01…04` |
-| `overflow.mp4` | Transición de espuma que cubre la pantalla al final del hero | `texture-foam.jpg` con máscara |
 | `ambient-desert.mp4` | Fondo en loop de La historia | `desert-border.png` con parallax |
 | `texture-liquid.png` | Textura de stout líquida (fondos, barra SRM) | Gradiente CSS stout→rubí |
 | `logo.svg` (o `logo.png` con fondo transparente) | Header, footer, age gate | Wordmark tipográfico |
