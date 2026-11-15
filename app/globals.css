@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+/*
+ * GOAT Beer design tokens (Tailwind v4).
+ * Fuente de verdad: design-system/goat-beer/MASTER.md
+ */
+@theme {
+  /* Color */
+  --color-ink: #0a0806;
+  --color-stout: #1c120c;
+  --color-stout-2: #2a1c13;
+  --color-gold: #d4a537;
+  --color-gold-soft: #e6c068;
+  --color-gold-deep: #9c7a28;
+  --color-foam: #e9d6b0;
+  --color-foam-muted: #b9a684;
+  --color-foam-faint: #9b896a;
+  --color-ruby: #5a1e14;
+  --color-ruby-bright: #c2553f;
+
+  /* Tipografía (variables inyectadas por next/font en layout.tsx) */
+  --font-display: var(--font-fraunces), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-manrope), "Inter", system-ui, sans-serif;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--letter-spacing: 0.24em;
+  --text-eyebrow--line-height: 1.4;
+  --text-display-md: clamp(2rem, 4.5vw, 3.5rem);
+  --text-display-md--line-height: 1.05;
+  --text-display-lg: clamp(2.75rem, 7vw, 6rem);
+  --text-display-lg--line-height: 1;
+  --text-display-xl: clamp(3.5rem, 12vw, 11rem);
+  --text-display-xl--line-height: 0.92;
+  --text-display-xl--letter-spacing: -0.03em;
+
+  /* Espaciado */
+  --spacing-section: clamp(5rem, 12vw, 10rem);
+  --spacing-gutter: clamp(1rem, 4vw, 3rem);
+  --container-site: 90rem;
+
+  /* Radios */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-pill: 9999px;
+
+  /* Sombras doradas */
+  --shadow-gold-sm: 0 0 0 1px rgb(212 165 55 / 0.25), 0 2px 8px rgb(0 0 0 / 0.5);
+  --shadow-gold-md: 0 0 0 1px rgb(212 165 55 / 0.35), 0 12px 32px -8px rgb(212 165 55 / 0.25);
+  --shadow-gold-lg: 0 0 0 1px rgb(212 165 55 / 0.45), 0 24px 64px -12px rgb(212 165 55 / 0.35);
+  --shadow-gold-glow: 0 0 48px 4px rgb(212 165 55 / 0.3);
+  --inset-shadow-stout: inset 0 1px 0 rgb(233 214 176 / 0.06);
+
+  /* Movimiento */
+  --ease-brew: cubic-bezier(0.22, 1, 0.36, 1);
+  --z-grain: 60;
+  --z-header: 40;
+  --z-drawer: 50;
+  --z-modal: 70;
+  --z-agegate: 80;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-ink);
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-foam);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+}
+
+@keyframes hotspot-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Diálogos nativos: drawer del carrito y modal */
+.ui-drawer,
+.ui-modal {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: none;
+  max-height: none;
+  color: var(--color-foam);
+  background: transparent;
+  transition:
+    transform 0.55s var(--ease-brew),
+    opacity 0.4s var(--ease-brew),
+    overlay 0.55s allow-discrete,
+    display 0.55s allow-discrete;
+}
+
+.ui-drawer {
+  inset: 0 0 0 auto;
+  height: 100dvh;
+  width: min(100vw, 28rem);
+  transform: translateX(100%);
+}
+.ui-drawer[open] {
+  transform: none;
+}
+
+.ui-modal {
+  inset: 0;
+  margin: auto;
+  width: min(calc(100vw - 2rem), 32rem);
+  height: fit-content;
+  opacity: 0;
+  transform: translateY(24px) scale(0.97);
+}
+.ui-modal[open] {
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  .ui-drawer[open] {
+    transform: translateX(100%);
+  }
+  .ui-modal[open] {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+}
+
+.ui-drawer::backdrop,
+.ui-modal::backdrop {
+  background: rgb(10 8 6 / 0);
+  backdrop-filter: blur(0);
+  transition:
+    background 0.4s,
+    backdrop-filter 0.4s,
+    overlay 0.4s allow-discrete,
+    display 0.4s allow-discrete;
+}
+.ui-drawer[open]::backdrop,
+.ui-modal[open]::backdrop {
+  background: rgb(10 8 6 / 0.7);
+  backdrop-filter: blur(6px);
+}
+@starting-style {
+  .ui-drawer[open]::backdrop,
+  .ui-modal[open]::backdrop {
+    background: rgb(10 8 6 / 0);
+    backdrop-filter: blur(0);
+  }
+}
+
+/* Cursor personalizado (solo desktop, ver CustomCursor.tsx) */
+.has-custom-cursor,
+.has-custom-cursor * {
+  cursor: none !important;
+}
+.custom-cursor-ring {
+  transition:
+    scale 0.35s var(--ease-brew),
+    background-color 0.35s,
+    border-color 0.35s;
+}
+.custom-cursor-ring[data-hover="1"] {
+  scale: 1.7;
+  background-color: rgb(212 165 55 / 0.08);
+  border-color: var(--color-gold);
+}
+/* Los <dialog> viven en el top layer, por encima del cursor: ahí vuelve el nativo */
+html.has-custom-cursor:has(dialog[open]),
+html.has-custom-cursor:has(dialog[open]) * {
+  cursor: auto !important;
+}
+html:has(dialog[open]) .custom-cursor {
+  display: none;
+}
+
+/* Hero: borde ondulado de la espuma (máscara) e indicador de scroll */
+.hero-foam {
+  -webkit-mask-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='90' viewBox='0 0 1200 90'%3E%3Cpath d='M0 45C150 5 300 85 450 45S750 5 900 45 1200 85 1200 45V90H0Z'/%3E%3C/svg%3E"),
+    linear-gradient(#000, #000);
+  mask-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='90' viewBox='0 0 1200 90'%3E%3Cpath d='M0 45C150 5 300 85 450 45S750 5 900 45 1200 85 1200 45V90H0Z'/%3E%3C/svg%3E"),
+    linear-gradient(#000, #000);
+  -webkit-mask-size: 1200px 90px, 100% calc(100% - 89px);
+  mask-size: 1200px 90px, 100% calc(100% - 89px);
+  -webkit-mask-position: top left, bottom;
+  mask-position: top left, bottom;
+  -webkit-mask-repeat: repeat-x, no-repeat;
+  mask-repeat: repeat-x, no-repeat;
+}
+
+@keyframes scroll-hint {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+/* Rendimiento inicial: el navegador se salta estilos/layout de las secciones de
+   abajo hasta que hacen falta. Se desactiva con la primera interacción
+   (SmoothScroll añade .cv-off) para que anclas y ScrollTrigger usen medidas reales. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1200px;
+}
+.cv-off .cv-auto {
+  content-visibility: visible;
+}
+
+/* Preloader: respaldo sin JS y omitido en visitas repetidas de la sesión */
+.preloader {
+  animation: preloader-fallback 0.6s 3s forwards;
+}
+.preloaded .preloader,
+.age-ok .age-gate {
+  display: none;
+}
+@keyframes preloader-fallback {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes cart-bump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+@keyframes skeleton-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+/* Grano de película global (overlay, no interactivo) */
+@utility film-grain {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
