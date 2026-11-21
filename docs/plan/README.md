@@ -46,6 +46,7 @@ Cada lunes (o al cierre de cada semana):
 | Fecha | Nota |
 |---|---|
 | 2026-11-21 | Plan inicial creado. Preview ya cubre las 11 secciones; falta cierre de calidad y datos del cliente. |
+| 2026-11-21 | Fase 1 avanzada: build, lint y capturas OK; Lighthouse móvil home 85 / tienda 80. Falta desplegar a Vercel y enviar al cliente. |
 
 ## Reglas que se mantienen durante todo el proyecto
 

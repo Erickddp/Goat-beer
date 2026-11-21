@@ -1,37 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Drunk G.O.A.T. Brewery
 
-## Getting Started
+Sitio de marca y tienda en línea de **Drunk G.O.A.T. Brewery**, cervecería artesanal de la frontera Ciudad Juárez / El Paso.
+Producto estrella: **Mezquite Stout** (stout con pechitas de mezquite y avena · 6 % ABV · 25 IBU · SRM 30 · 355 ml).
 
-First, run the development server:
+**Estado:** preview visual para el cliente. Sin backend: tienda, carrito, reseñas y formularios usan datos mock y estado local.
+El camino a la venta en línea está en [`docs/plan/`](docs/plan/README.md).
+
+## Stack
+Next.js (App Router, TypeScript) · Tailwind CSS · GSAP + ScrollTrigger · Lenis · Zustand (carrito en localStorage).
+
+## Cómo correrlo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # desarrollo en http://localhost:3000
+npm run build    # verificación de producción
+npm run start    # sirve el build
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Estructura
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Ruta | Qué hay |
+|---|---|
+| `app/` | Páginas (`/`, `/tienda`, `/aviso-de-privacidad`) y `api/checkout` (mock) |
+| `components/hero/` | Age gate y `PourSequence` (secuencia de frames en canvas controlada por scroll) |
+| `components/sections/` | Historia, ficha técnica, cata, ingredientes, maridaje, tienda, reseñas, pedidos, footer |
+| `components/cart/`, `components/shop/` | Drawer del carrito, modal de pago, tarjetas de producto |
+| `content/` | **Única fuente de datos**: `products`, `reviews`, `site`, `hero`, `i18n/es.ts` |
+| `lib/cart/` | Store del carrito y tipos del checkout |
+| `lib/agent/` | Placeholder del futuro agente de ventas de WhatsApp |
+| `scripts/extract-frames.sh` | Genera frames WebP y audio a partir de `public/media/*.mp4` |
+| `public/media/`, `public/frames/`, `public/sfx/` | Imágenes, secuencias del hero y efectos de sonido |
+| `design-system/` | Sistema de diseño generado y ajustado a la identidad |
+| `docs/plan/` | Plan por fases, pendientes del cliente, decisiones y riesgos |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Hero "destape y servido"
+La fuente activa se elige en `content/hero.ts` (`frames` o `keyframes`). Para regenerar frames y audio cuando cambie el video:
 
-## Learn More
+```bash
+bash scripts/extract-frames.sh
+# sin ffmpeg en el PATH:
+FFMPEG=/ruta/ffmpeg FFPROBE=/ruta/ffprobe bash scripts/extract-frames.sh
+```
 
-To learn more about Next.js, take a look at the following resources:
+Si cambia el diseño de la botella, sigue [`docs/plan/cambio-diseno-botella.md`](docs/plan/cambio-diseno-botella.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Despliegue
+Pensado para Vercel. `.vercelignore` deja fuera los `.mp4` y los originales (`src/`); se despliegan solo los frames y el audio.
+La preview tiene `noindex` activado (`app/layout.tsx`); hay que quitarlo en el lanzamiento (Fase 5).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Goat-beer
+## Assets pendientes
+Ver [`ASSETS_PENDIENTES.md`](ASSETS_PENDIENTES.md).

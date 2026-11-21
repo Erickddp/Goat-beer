@@ -34,7 +34,7 @@ Alternativas guardadas en `public/media/_alternativas/` (no se usan): copa desbo
 
 ## Por revisar
 
-- `pairing-mole.png` (agregado por el usuario): la foto parece **caldo de res** (elote, tuétano, verduras), no mole. Confirmar con el cliente o regenerar. Su `imageAlt` en `content/i18n/es.ts` está vacío.
+- `pairing-mole.png` (agregado por el usuario): la foto parece **caldo de res** (elote, tuétano, verduras), no mole. Confirmar con el cliente o regenerar. Su `imageAlt` en `content/i18n/es.ts` describe lo que se ve (caldo de res); cámbialo al cambiar la foto.
 
 ## Faltan
 

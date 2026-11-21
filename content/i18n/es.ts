@@ -99,7 +99,7 @@ const es = {
     items: [
       { id: "chocolate", title: "Pastel de chocolate", body: "Chocolate amargo y stout: pareja de toda la vida. Ni la suegra los separa.", imageAlt: "Rebanada de pastel de chocolate con frutos rojos junto a una botella y una copa de Mezquite Stout" },
       { id: "carne-asada", title: "Carne asada", body: "El humo de la parrilla encuentra su eco en la copa. En taco, en corte o directo del asador.", imageAlt: "Corte de carne asada sobre tabla junto a una botella y una copa de Mezquite Stout" },
-      { id: "mole", title: "Mole", body: "Cacao, chiles y especias contra maltas tostadas. Fiesta asegurada, ropa blanca no recomendada.", imageAlt: "" },
+      { id: "mole", title: "Mole", body: "Cacao, chiles y especias contra maltas tostadas. Fiesta asegurada, ropa blanca no recomendada.", imageAlt: "Cazuela de barro con caldo de res, elote y verduras, junto a tortillas, limón, una botella y una copa de Mezquite Stout" },
     ],
     imagePending: "Foto en camino",
     outroTitle: "¿Y tú con qué la acompañas?",
