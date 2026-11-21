@@ -24,6 +24,7 @@ Material de apoyo:
 - [Pendientes del cliente](pendientes-cliente.md): lo que hay que pedirle, con prioridad y fecha límite.
 - [Cambio de diseño de botella](cambio-diseno-botella.md): qué se reemplaza y cómo, cuando el cliente entregue el diseño final.
 - [Decisiones abiertas y riesgos](decisiones-y-riesgos.md).
+- [Reparto semanal: quién hace qué](reparto-semanal.md).
 
 ## Alcance del primer lanzamiento
 
