@@ -25,6 +25,8 @@ Material de apoyo:
 - [Cambio de diseño de botella](cambio-diseno-botella.md): qué se reemplaza y cómo, cuando el cliente entregue el diseño final.
 - [Decisiones abiertas y riesgos](decisiones-y-riesgos.md).
 - [Reparto semanal: quién hace qué](reparto-semanal.md).
+- [Base de datos: guía de uso](base-de-datos.md).
+- [Avances semanales para el cliente](../avances/).
 
 ## Alcance del primer lanzamiento
 

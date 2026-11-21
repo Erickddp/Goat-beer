@@ -3,15 +3,19 @@
 import { useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useSectionMotion } from "@/lib/useSectionMotion";
-import { products as allProducts, type Product } from "@/content/products";
+import type { Product } from "@/content/products";
+import { useCatalog } from "@/lib/catalog/store";
 import ProductCard from "./ProductCard";
 
 /**
  * Rejilla de productos. Entrada "vitrina": cada tarjeta se descubre de abajo
  * hacia arriba (clip-path) mientras sube, en lotes según van entrando.
  */
-export default function ProductGrid({ products = allProducts }: { products?: Product[] }) {
+export default function ProductGrid({ products: initial }: { products?: Product[] }) {
   const root = useRef<HTMLUListElement>(null);
+  // El servidor manda el catálogo en el HTML; después se sigue el del store (mismo origen).
+  const synced = useCatalog((s) => (s.synced ? s.products : null));
+  const products = synced ?? initial ?? [];
 
   useSectionMotion(root, (q) => {
         const items = q("[data-grid-item]");

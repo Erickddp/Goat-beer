@@ -3,16 +3,19 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart, getTotals } from "@/lib/cart/store";
-import { formatPrice, getProduct } from "@/content/products";
+import { useCart, useCartTotals } from "@/lib/cart/store";
+import { findProduct, useCatalog } from "@/lib/catalog/store";
+import { maxQtyFor } from "@/lib/cart/logic";
+import { formatPrice } from "@/content/products";
 import Dialog from "@/components/ui/Dialog";
 import { CloseIcon, MinusIcon, PlusIcon, TrashIcon, ArrowIcon } from "@/components/ui/Icons";
 import t from "@/content/i18n/es";
 
 export default function CartDrawer() {
-  const { lines, isOpen, close, setQuantity, remove, checkout } = useCart();
+  const { lines, isOpen, close, setQuantity, remove, checkout, notice, dismissNotice, checkoutError } = useCart();
+  const products = useCatalog((s) => s.products);
   const [pending, setPending] = useState(false);
-  const totals = getTotals(lines);
+  const totals = useCartTotals();
   const subtotal = formatPrice(totals.subtotalCents);
 
   const onCheckout = async () => {
@@ -46,6 +49,23 @@ export default function CartDrawer() {
           </button>
         </header>
 
+        {notice && (
+          <div role="status" className="flex items-start gap-3 border-b border-gold/10 bg-ruby/20 px-6 py-4 text-sm text-foam">
+            <p className="flex-1">
+              {notice.removed.length > 0 && <span className="block">{t.cart.noticeRemoved(notice.removed)}</span>}
+              {notice.reduced.length > 0 && <span className="block">{t.cart.noticeReduced(notice.reduced)}</span>}
+            </p>
+            <button
+              type="button"
+              onClick={dismissNotice}
+              aria-label={t.cart.noticeDismiss}
+              className="-mr-2 -mt-2 grid size-9 shrink-0 cursor-pointer place-items-center rounded-full text-foam-muted transition-colors hover:text-foam"
+            >
+              <CloseIcon className="size-4" />
+            </button>
+          </div>
+        )}
+
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8 text-center">
             <p className="max-w-[18rem] font-display text-2xl font-light italic text-foam-muted">{t.cart.empty}</p>
@@ -62,7 +82,7 @@ export default function CartDrawer() {
           <>
             <ul className="flex-1 divide-y divide-gold/10 overflow-y-auto overscroll-contain px-6">
               {lines.map((line) => {
-                const product = getProduct(line.productId);
+                const product = findProduct(products, line.productId);
                 if (!product) return null;
                 const lineTotal = formatPrice(
                   product.priceCents === null ? null : product.priceCents * line.quantity,
@@ -115,8 +135,9 @@ export default function CartDrawer() {
                           <button
                             type="button"
                             onClick={() => setQuantity(product.id, line.quantity + 1)}
-                            aria-label={t.cart.increase}
-                            className="grid size-10 cursor-pointer place-items-center rounded-full text-foam-muted transition-colors hover:text-gold"
+                            disabled={line.quantity >= maxQtyFor(product)}
+                            aria-label={line.quantity >= maxQtyFor(product) ? t.cart.maxReached : t.cart.increase}
+                            className="grid size-10 cursor-pointer place-items-center rounded-full text-foam-muted transition-colors hover:text-gold disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:text-foam-muted"
                           >
                             <PlusIcon className="size-4" />
                           </button>
@@ -139,6 +160,11 @@ export default function CartDrawer() {
                 </span>
               </div>
               <p className="mt-2 text-sm text-foam-faint">{t.cart.taxesNote}</p>
+              {checkoutError && (
+                <p role="alert" className="mt-3 rounded-md bg-ruby/25 px-4 py-3 text-sm text-foam">
+                  {checkoutError}
+                </p>
+              )}
               <button
                 data-magnetic
                 type="button"

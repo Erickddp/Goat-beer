@@ -1,6 +1,7 @@
 /**
- * Catálogo. Única fuente de datos de productos.
- * Más adelante se sustituye por CMS/DB sin tocar componentes: mantener la forma de `Product`.
+ * Catálogo base. Con DATABASE_URL, el sitio lee de la base de datos (`lib/catalog/server.ts`)
+ * y este archivo sirve de semilla (`npm run db:seed`) y de respaldo; sin ella, es la fuente de datos.
+ * Mantener la forma de `Product`: los componentes dependen de ella.
  * Precios: `null` = por confirmar con el cliente (la UI muestra "Precio por confirmar").
  */
 
@@ -43,6 +44,11 @@ export interface Product {
   image?: ProductImage;
   /** SKU para la futura integración de pagos/inventario */
   sku?: string;
+  /**
+   * Unidades disponibles para vender (stock − apartado), si el producto lleva inventario.
+   * `undefined`/`null` = sin control de stock. Viene de la base de datos; aquí no se llena.
+   */
+  stock?: number | null;
 }
 
 const mezquiteStoutSpecs: BeerSpecs = { abv: 6, ibu: 25, srm: 30, volumeMl: 355 };

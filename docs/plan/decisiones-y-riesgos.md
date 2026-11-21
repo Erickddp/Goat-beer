@@ -5,7 +5,7 @@
 | # | Decisión | Propuesta por defecto | Quién decide | Antes de |
 |---|---|---|---|---|
 | D1 | Pasarela de pago | Mercado Pago Checkout Pro (México: tarjeta, OXXO, SPEI). Stripe si se cobra en USD | Cliente + desarrollo | Fase 3 (iniciar alta en semana 1) |
-| D2 | Base de datos | Supabase (Postgres) con RLS | Desarrollo | Fase 2 |
+| D2 | Base de datos y hosting | Código en Postgres estándar (decidido). Hosting: **Vercel + Supabase** recomendado; **Railway** es válido (ver [base-de-datos.md](base-de-datos.md)) | Erick | Semana 2 |
 | D3 | Cómo ve y gestiona pedidos el negocio | Aviso por WhatsApp/correo + tabla simple; panel propio después | Cliente | Fase 4 |
 | D4 | Correo transaccional | Resend o similar, con dominio propio | Desarrollo | Fase 4 |
 | D5 | Medios de pago activos al inicio | Tarjeta + SPEI/OXXO si la pasarela los aprueba | Cliente | Fase 3 |

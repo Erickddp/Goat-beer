@@ -1,14 +1,13 @@
 "use client";
 
-import { useCart, getTotals } from "@/lib/cart/store";
+import { useCart, useCartTotals } from "@/lib/cart/store";
 import { CartIcon } from "@/components/ui/Icons";
 import t from "@/content/i18n/es";
 
 export default function CartButton() {
-  const lines = useCart((s) => s.lines);
   const bump = useCart((s) => s.bump);
   const open = useCart((s) => s.open);
-  const count = getTotals(lines).itemCount;
+  const count = useCartTotals().itemCount;
 
   return (
     <button

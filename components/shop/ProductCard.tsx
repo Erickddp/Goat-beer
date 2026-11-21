@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useCart } from "@/lib/cart/store";
+import { maxQtyFor } from "@/lib/cart/logic";
 import { formatPrice, type Product } from "@/content/products";
 import { CheckIcon, PlusIcon } from "@/components/ui/Icons";
 import t from "@/content/i18n/es";
@@ -25,13 +26,21 @@ const LAYOUTS: Record<number, { x: number; s: number; z: number }[]> = {
   ],
 };
 
+/** A partir de cuántas unidades se avisa "Quedan N". */
+const LOW_STOCK = 6;
+
 const FINE_POINTER = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
 export default function ProductCard({ product }: { product: Product }) {
   const root = useRef<HTMLElement>(null);
   const add = useCart((s) => s.add);
+  const inCart = useCart((s) => s.lines.find((l) => l.productId === product.id)?.quantity ?? 0);
   const [added, setAdded] = useState(false);
   const available = product.status === "available";
+  const max = maxQtyFor(product);
+  const soldOut = available && max === 0;
+  const atMax = available && !soldOut && inCart >= max;
+  const lowStock = available && !soldOut && product.stock != null && product.stock <= LOW_STOCK ? product.stock : null;
   const price = formatPrice(product.priceCents, product.currency);
   const bottles = LAYOUTS[product.unitsPerPack] ?? LAYOUTS[1];
 
@@ -133,13 +142,20 @@ export default function ProductCard({ product }: { product: Product }) {
             </span>
           )}
           <span className="absolute right-4 top-4 z-20 rounded-pill border border-foam/15 bg-ink/50 px-3 py-1 text-[0.7rem] uppercase tracking-[0.16em] text-foam-muted backdrop-blur-md">
-            {available ? t.shop.bottles(product.unitsPerPack) : t.shop.comingSoon}
+            {soldOut ? t.shop.soldOut : available ? t.shop.bottles(product.unitsPerPack) : t.shop.comingSoon}
           </span>
+          {lowStock !== null && (
+            <span className="absolute bottom-4 left-4 z-20 rounded-pill bg-ruby px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-foam">
+              {t.shop.lowStock(lowStock)}
+            </span>
+          )}
 
           {/* Piso con reflejo */}
           <div aria-hidden className="absolute inset-x-0 bottom-0 h-[14%] bg-gradient-to-t from-ink/80 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-[6%] top-[12%] [perspective:700px]">
+          <div
+            className={`absolute inset-x-0 bottom-[6%] top-[12%] [perspective:700px] ${soldOut ? "opacity-40 grayscale" : ""}`}
+          >
             {product.image ? (
               bottles.map((b, i) => (
                 <div
@@ -215,7 +231,11 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className={`font-display tabular-nums ${price ? "text-2xl text-foam" : "text-sm text-foam-muted"}`}>
               {available ? (price ?? t.shop.priceTbd) : ""}
             </span>
-            {available ? (
+            {soldOut ? (
+              <span className="inline-flex min-h-12 items-center rounded-md border border-foam/20 px-5 text-sm text-foam-muted">
+                {t.shop.soldOut}
+              </span>
+            ) : available ? (
               <button
                 data-magnetic
                 type="button"
@@ -223,8 +243,9 @@ export default function ProductCard({ product }: { product: Product }) {
                   add(product.id);
                   setAdded(true);
                 }}
-                aria-label={t.shop.addAria(product.name)}
-                className={`inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-md px-5 font-semibold transition-[background-color,box-shadow,color] duration-200 ${
+                disabled={atMax && !added}
+                aria-label={atMax && !added ? `${product.name}: ${t.cart.maxReached}` : t.shop.addAria(product.name)}
+                className={`inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-md px-5 font-semibold transition-[background-color,box-shadow,color] duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${
                   added
                     ? "bg-foam text-ink"
                     : "bg-gold text-ink hover:bg-gold-soft hover:shadow-gold-glow"

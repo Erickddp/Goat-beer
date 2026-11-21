@@ -19,7 +19,7 @@ Cada semana termina con un **avance para el cliente** (formato al final).
 | Claude | Tú | Cliente |
 |---|---|---|
 | Integrar videos e imágenes nuevos ([procedimiento](cambio-diseno-botella.md)) | Pasarme el diseño final, videos, logo y fotos en cuanto lleguen | Entregar diseño final, videos `pour` y `overflow`, logo, foto con fondo transparente |
-| Ajustar tiempos del hero (`hero.ts`) y regenerar frames | Crear el proyecto de Supabase y darme las claves (en variables de Vercel, no por chat) | Precios definitivos |
+| Ajustar tiempos del hero (`hero.ts`) y regenerar frames | Crear la base (Supabase o Railway), poner `DATABASE_URL` en el hosting y correr `db:migrate` + `db:seed` ([guía](base-de-datos.md)) | Precios definitivos |
 | Pasar el catálogo a base de datos con inventario | Confirmar con el cliente la decisión de pasarela | Inventario inicial y número de WhatsApp |
 | Validar el carrito contra el catálogo | | |
 

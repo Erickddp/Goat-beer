@@ -2,7 +2,7 @@
 
 import { useCart } from "@/lib/cart/store";
 import { whatsappUrl } from "@/content/site";
-import { getProduct } from "@/content/products";
+import { findProduct, useCatalog } from "@/lib/catalog/store";
 import Dialog from "@/components/ui/Dialog";
 import { CloseIcon, WhatsAppIcon } from "@/components/ui/Icons";
 import t from "@/content/i18n/es";
@@ -10,10 +10,11 @@ import t from "@/content/i18n/es";
 /** Modal "Pagos en línea muy pronto". Ofrece mandar el carrito por WhatsApp. */
 export default function CheckoutModal() {
   const { checkoutOpen, closeCheckout, lines } = useCart();
+  const products = useCatalog((s) => s.products);
 
   const orderText = [
     "¡Hola! Quiero pedir:",
-    ...lines.map((l) => `• ${l.quantity} × ${getProduct(l.productId)?.name ?? l.productId}`),
+    ...lines.map((l) => `• ${l.quantity} × ${findProduct(products, l.productId)?.name ?? l.productId}`),
   ].join("\n");
   const wa = whatsappUrl(orderText);
 

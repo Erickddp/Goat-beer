@@ -6,9 +6,11 @@ import Header from "@/components/Header";
 import Footer from "@/components/sections/Footer";
 import CartRoot from "@/components/cart/CartRoot";
 import Preloader from "@/components/ui/Preloader";
-import CustomCursor from "@/components/ui/CustomCursor";
+import DeferredCursor from "@/components/ui/DeferredCursor";
 import AgeGate from "@/components/hero/AgeGate";
 import SoundToggle from "@/components/hero/SoundToggle";
+import CatalogSync from "@/components/providers/CatalogSync";
+import { getCatalog } from "@/lib/catalog/server";
 import "./globals.css";
 
 // Sin precarga: el preloader cubre el primer segundo, así el cambio de fuente no
@@ -81,7 +83,8 @@ export const viewport: Viewport = {
 /** Antes del primer pintado: ocultar preloader (ya visto en la sesión) y age gate (edad ya confirmada). */
 const preloadScript = `try{if(sessionStorage.getItem("goat-preloaded")==="1")document.documentElement.classList.add("preloaded");if(localStorage.getItem("goat-age-ok")==="1")document.documentElement.classList.add("age-ok")}catch(e){}`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const catalog = await getCatalog();
   return (
     <html
       lang="es"
@@ -99,9 +102,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <Footer />
         </SmoothScroll>
+        <CatalogSync products={catalog} />
         <CartRoot />
         <SoundToggle />
-        <CustomCursor />
+        <DeferredCursor />
         <div aria-hidden className="film-grain" />
       </body>
     </html>

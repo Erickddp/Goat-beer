@@ -4,6 +4,7 @@ import Order from "@/components/sections/Order";
 import { BarrelIcon, SnowIcon, TruckIcon } from "@/components/ui/Icons";
 import { site } from "@/content/site";
 import t from "@/content/i18n/es";
+import { getCatalog } from "@/lib/catalog/server";
 
 export const metadata: Metadata = {
   title: `${t.shop.eyebrow} · ${site.brand}`,
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
 
 const PERK_ICONS = [TruckIcon, SnowIcon, BarrelIcon];
 
-export default function TiendaPage() {
+export default async function TiendaPage() {
+  const products = await getCatalog();
   return (
     <main id="contenido" className="flex-1">
       <section aria-labelledby="tienda-title" className="relative overflow-hidden pb-section pt-32 md:pt-44">
@@ -49,7 +51,7 @@ export default function TiendaPage() {
 
           <div className="mt-14">
             <h2 className="sr-only">Productos</h2>
-            <ProductGrid />
+            <ProductGrid products={products} />
           </div>
         </div>
       </section>

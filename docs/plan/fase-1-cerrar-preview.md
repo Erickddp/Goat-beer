@@ -16,7 +16,7 @@ pedirle todo lo que bloquea las fases siguientes.
 - [ ] Sonido (no verificable en este entorno sin audio; probar en iOS Safari y Chrome Android reales): se desbloquea con el clic del age gate, el botón de silencio funciona, no suena antes de interactuar.
 - [x] Age gate: guarda en localStorage con try/catch; "No" redirige o bloquea correctamente. — "No" muestra "Vuelve cuando seas mayor" y no guarda nada; "Sí" guarda `goat-age-ok`.
 - [x] Carrito: agregar, quitar, cambiar cantidad, persistencia al recargar, modal "Pagar". — agregar, sumar, subtotal "Por confirmar", persistencia y modal OK; quitar/restar no probado.
-- [~] Lighthouse móvil, Performance ≥ 85 (anotar resultado y los 3 cuellos principales). — **Home 85** (LCP 3.6 s, TBT 180 ms, CLS 0.02, 3.6 MB), **/tienda 80** (LCP 3.5 s, TBT 370 ms). Accesibilidad 100, Best Practices 100, SEO 63 por el `noindex` intencional. Cuellos: LCP, CSS bloqueante de render, peso de imágenes. Medido en local con servidor de producción; repetir sobre Vercel.
+- [~] Lighthouse móvil, Performance ≥ 85. — 21 nov (1ª medición): home 85, /tienda 80. 21 nov (tras diferir cursor y drawer del carrito): **home 86–87** (3 corridas), **/tienda 73–80** (variable). Accesibilidad 100, Best Practices 100, SEO 63 por el `noindex` intencional. En Chrome real (4× CPU, 4G) el LCP de /tienda es **~0.7 s**; el 3.5 s es la simulación de Lighthouse sumando el JS de hidratación (runtime de Next + React ≈ 60 %). El perfil no muestra código propio dominante. **Repetir sobre la URL de producción** antes de seguir optimizando.
 - [~] Accesibilidad: contraste AA, foco visible, `alt` en todas las imágenes. — Lighthouse a11y 100 y alt completos; falta revisar el foco visible a mano.
 
 ### Despliegue

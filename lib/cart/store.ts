@@ -2,10 +2,9 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
-import { getProduct } from "@/content/products";
+import { findProduct, useCatalog } from "@/lib/catalog/store";
+import { clampQty, computeTotals, maxQtyFor, reconcileLines } from "./logic";
 import type { CartLine, CartProvider, CartTotals, CheckoutResult } from "./types";
-
-const MAX_QTY = 48;
 
 /** localStorage envuelto en try/catch: modo privado, cuota llena o almacenamiento bloqueado. */
 const safeStorage: StateStorage = {
@@ -32,20 +31,32 @@ const safeStorage: StateStorage = {
   },
 };
 
+export interface CartNotice {
+  removed: (string | null)[];
+  reduced: string[];
+}
+
 interface CartUI {
   isOpen: boolean;
   checkoutOpen: boolean;
   checkoutMessage: string | null;
+  /** Error del checkout que se muestra dentro del carrito (p. ej. algo se agotó). */
+  checkoutError: string | null;
   /** Se incrementa en cada "Agregar" para animar el botón del carrito. */
   bump: number;
+  /** Aviso cuando el carrito guardado cambió para ajustarse al catálogo. */
+  notice: CartNotice | null;
   open(): void;
   close(): void;
   closeCheckout(): void;
+  dismissNotice(): void;
+  /** Ajusta las líneas al catálogo vigente (al rehidratar y cuando llega el catálogo del servidor). */
+  reconcile(): void;
 }
 
 export type CartStore = CartProvider & CartUI;
 
-const clamp = (n: number) => Math.max(0, Math.min(MAX_QTY, Math.floor(n)));
+const catalog = () => useCatalog.getState().products;
 
 export const useCart = create<CartStore>()(
   persist(
@@ -54,29 +65,42 @@ export const useCart = create<CartStore>()(
       isOpen: false,
       checkoutOpen: false,
       checkoutMessage: null,
+      checkoutError: null,
       bump: 0,
+      notice: null,
 
       add: (productId, quantity = 1) => {
-        const product = getProduct(productId);
+        const product = findProduct(catalog(), productId);
         if (!product || product.status !== "available") return;
+        const max = maxQtyFor(product);
+        if (max === 0) return;
         set((s) => {
           const existing = s.lines.find((l) => l.productId === productId);
           const lines = existing
             ? s.lines.map((l) =>
-                l.productId === productId ? { ...l, quantity: clamp(l.quantity + quantity) } : l,
+                l.productId === productId ? { ...l, quantity: Math.min(max, clampQty(l.quantity + quantity)) } : l,
               )
-            : [...s.lines, { productId, quantity: clamp(quantity) }];
+            : [...s.lines, { productId, quantity: Math.min(max, clampQty(quantity)) }];
           return { lines, bump: s.bump + 1 };
         });
       },
-      setQuantity: (productId, quantity) =>
+      setQuantity: (productId, quantity) => {
+        const product = findProduct(catalog(), productId);
+        const max = product ? maxQtyFor(product) : 0;
         set((s) => ({
           lines: s.lines
-            .map((l) => (l.productId === productId ? { ...l, quantity: clamp(quantity) } : l))
+            .map((l) => (l.productId === productId ? { ...l, quantity: Math.min(max, clampQty(quantity)) } : l))
             .filter((l) => l.quantity > 0),
-        })),
+        }));
+      },
       remove: (productId) => set((s) => ({ lines: s.lines.filter((l) => l.productId !== productId) })),
       clear: () => set({ lines: [] }),
+
+      reconcile: () => {
+        const { lines, removed, reduced } = reconcileLines(get().lines, catalog());
+        const changed = removed.length > 0 || reduced.length > 0;
+        set({ lines, ...(changed && { notice: { removed, reduced } }) });
+      },
 
       checkout: async () => {
         let result: CheckoutResult;
@@ -92,15 +116,18 @@ export const useCart = create<CartStore>()(
         }
         if (result.status === "redirect") {
           window.location.assign(result.url);
+        } else if (result.status === "error") {
+          set({ checkoutError: result.message });
         } else {
-          set({ isOpen: false, checkoutOpen: true, checkoutMessage: result.message || null });
+          set({ isOpen: false, checkoutOpen: true, checkoutMessage: result.message || null, checkoutError: null });
         }
         return result;
       },
 
       open: () => set({ isOpen: true }),
-      close: () => set({ isOpen: false }),
+      close: () => set({ isOpen: false, checkoutError: null }),
       closeCheckout: () => set({ checkoutOpen: false }),
+      dismissNotice: () => set({ notice: null }),
     }),
     {
       name: "goat-cart",
@@ -109,19 +136,20 @@ export const useCart = create<CartStore>()(
       partialize: (s) => ({ lines: s.lines }),
       // Se rehidrata en el cliente (CartRoot) para evitar desajustes de hidratación.
       skipHydration: true,
+      // Un carrito guardado puede traer productos que ya no existen o cantidades inválidas.
+      // Solo si ya llegó el catálogo del servidor; si no, lo hace <CatalogSync/> al recibirlo.
+      onRehydrateStorage: () => (state) => {
+        if (useCatalog.getState().synced) state?.reconcile();
+      },
     },
   ),
 );
 
-export function getTotals(lines: CartLine[]): CartTotals {
-  let itemCount = 0;
-  let subtotal: number | null = 0;
-  for (const line of lines) {
-    const product = getProduct(line.productId);
-    if (!product) continue;
-    itemCount += line.quantity;
-    if (product.priceCents === null || subtotal === null) subtotal = null;
-    else subtotal += product.priceCents * line.quantity;
-  }
-  return { itemCount, subtotalCents: subtotal, currency: "MXN" };
+export const getTotals = (lines: CartLine[]): CartTotals => computeTotals(lines, catalog());
+
+/** Hook: totales que se recalculan cuando cambian las líneas o el catálogo. */
+export function useCartTotals(): CartTotals {
+  const lines = useCart((s) => s.lines);
+  const products = useCatalog((s) => s.products);
+  return computeTotals(lines, products);
 }

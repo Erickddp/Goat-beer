@@ -3,9 +3,11 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import ProductGrid from "@/components/shop/ProductGrid";
 import { ArrowIcon } from "@/components/ui/Icons";
 import t from "@/content/i18n/es";
+import { getCatalog } from "@/lib/catalog/server";
 
 /** 08 · Tienda (preview en la home). La página completa vive en /tienda. */
-export default function Shop() {
+export default async function Shop() {
+  const products = await getCatalog();
   return (
     <section id="tienda" aria-labelledby="shop-title" className="cv-auto relative py-section">
       <div
@@ -19,7 +21,7 @@ export default function Shop() {
         </div>
 
         <div className="mt-14 lg:mt-20">
-          <ProductGrid />
+          <ProductGrid products={products} />
         </div>
 
         <div className="mt-12 flex justify-center">

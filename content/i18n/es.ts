@@ -117,6 +117,8 @@ const es = {
     addAria: (name: string) => `Agregar ${name} al carrito`,
     comingSoon: "Próximamente",
     priceTbd: "Precio por confirmar",
+    soldOut: "Agotada",
+    lowStock: (n: number) => (n === 1 ? "¡Queda 1!" : `Quedan ${n}`),
     bottles: (n: number) => (n === 1 ? "1 botella" : `${n} botellas`),
     perks: [
       { title: "Entrega local", body: "A domicilio en Ciudad Juárez." },
@@ -143,6 +145,16 @@ const es = {
     checkoutSoonBody: "Estamos afinando la caja registradora. Mientras tanto, mándanos tu pedido por WhatsApp y te lo llevamos.",
     checkoutSoonCta: "Pedir por WhatsApp",
     checkoutSoonClose: "Seguir viendo",
+    maxReached: "Ya no hay más disponibles",
+    noticeRemoved: (names: (string | null)[]) => {
+      const known = names.filter((n): n is string => Boolean(n));
+      const unknown = names.length - known.length;
+      const parts = [...known, ...(unknown ? [unknown === 1 ? "un producto que ya no está en la tienda" : `${unknown} productos que ya no están en la tienda`] : [])];
+      return `Quitamos de tu carrito lo que ya no está disponible: ${parts.join(", ")}.`;
+    },
+    noticeReduced: (names: string[]) =>
+      `Ajustamos la cantidad al inventario que queda de: ${names.join(", ")}.`,
+    noticeDismiss: "Cerrar aviso",
   },
   reviews: {
     eyebrow: "Reseñas",

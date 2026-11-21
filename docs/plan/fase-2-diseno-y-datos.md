@@ -18,25 +18,27 @@ Seguir el procedimiento de [cambio-diseno-botella.md](cambio-diseno-botella.md).
 - [ ] Revisión visual completa a 375, 768, 1280 y 1920 px.
 
 ## B. Base de datos
-Decisión pendiente (ver [decisiones-y-riesgos.md](decisiones-y-riesgos.md)): **Supabase (Postgres)** es la propuesta por defecto
-por su capa gratuita, autenticación para un panel futuro y facilidad con Vercel.
-- [ ] Crear proyecto y variables de entorno en Vercel (nada de claves en el repo).
-- [ ] Esquema mínimo:
+**Hecho el 2026-11-21 (código).** Postgres estándar: sirve con Supabase o Railway, solo cambia `DATABASE_URL`.
+Guía completa: [base-de-datos.md](base-de-datos.md). Decisión de hosting: D2 en [decisiones-y-riesgos.md](decisiones-y-riesgos.md).
+- [ ] Crear la base (Supabase o Railway) y la variable `DATABASE_URL` en el hosting (nada de claves en el repo). — **Erick**
+- [ ] Correr `npm run db:migrate` y `npm run db:seed` contra la base real. — **Erick**
+- [x] Esquema mínimo (`db/migrations/0001_init.sql`), probado en Postgres 16:
   - `products` (id, slug, nombre, descripción, estado `available|coming-soon`, precio en centavos MXN, specs, imagen, orden).
   - `inventory` (product_id, stock, reservado).
   - `orders` (id, estado, subtotal, envío, total, datos del cliente, dirección, zona, notas, proveedor de pago, id de pago, timestamps).
   - `order_items` (order_id, product_id, cantidad, precio unitario al momento de la compra).
   - `delivery_zones` (zona, costo de envío, mínimo de compra, activa).
-- [ ] Guardar precios en **centavos enteros**, nunca flotantes.
-- [ ] Capa de acceso en `lib/` (por ejemplo `lib/db/`) con tipos propios; los componentes siguen recibiendo la forma `Product` de `content/products.ts`.
-- [ ] Script de siembra que cargue el catálogo actual de `content/products.ts`.
-- [ ] `/tienda` y la sección de tienda leen de la base de datos (Server Components); `content/products.ts` queda como semilla y respaldo.
-- [ ] Políticas de seguridad (RLS) activas: el navegador solo puede leer productos; nada de escritura pública.
+- [x] Guardar precios en **centavos enteros**, nunca flotantes.
+- [x] Capa de acceso en `lib/` (por ejemplo `lib/db/`) con tipos propios; los componentes siguen recibiendo la forma `Product` de `content/products.ts`.
+- [x] Script de siembra que cargue el catálogo actual de `content/products.ts`.
+- [x] `/tienda` y la sección de tienda leen de la base de datos (Server Components); `content/products.ts` queda como semilla y respaldo.
+- [x] RLS activado sin políticas: la API pública de Supabase no puede leer ni escribir; el sitio entra solo desde el servidor.
 - [ ] Inventario: definir si se reserva stock al iniciar el pago y por cuánto tiempo (propuesta: 15 min).
 
 ## C. Carrito
-- [ ] Validar el carrito persistido contra el catálogo al cargar (producto retirado, precio cambiado, sin stock).
-- [ ] Mostrar mensajes claros cuando una línea ya no es válida.
+Además: "Agotada", "Quedan N" (≤ 6), tope de cantidad según stock, y `/api/checkout` valida contra el catálogo sin caché (409 si algo cambió). Pruebas: `npm test`.
+- [x] Validar el carrito persistido contra el catálogo al cargar (producto retirado, precio cambiado, sin stock).
+- [x] Mostrar mensajes claros cuando una línea ya no es válida.
 
 ## Criterios de salida
 - Diseño final integrado y revisado en los 4 anchos.
